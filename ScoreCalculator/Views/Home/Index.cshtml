@@ -1,0 +1,116 @@
+﻿@section Scripts {
+    <script type="text/javascript">
+
+        $(document)
+            .ready(function () {
+
+                var framesArray = [];
+                var scoreArrays = [];
+
+
+
+                $('#calc-btn')
+                    .on('click',
+                        function (e) {
+
+                            if (framesArray.length == 12) {
+                                framesArray = [];
+                                $('.result').text("");
+                            }
+
+                            //Grab current all frame's rolls
+
+                            var firstRoll = $('#score-roll').val();
+                            var isNumeric = firstRoll.match(/^\d+$ /);
+
+                            framesArray = firstRoll.split(' ');
+
+                            var duplicateframesArray = framesArray;
+                            var framescore;
+
+                            scoreArrays = [];
+                            while (framesArray.length > 0) {
+
+                                framescore = duplicateframesArray.splice(0, 2);
+                                scoreArrays.push({ first: framescore[0], second: framescore[1] });
+                            }
+
+                            //Calculate and show the score
+                            $.ajax({
+                                type: "POST",
+                                url: '@Url.Action("Calculate", "ScoreCalculator")',
+                                data: JSON.stringify({ frames: scoreArrays }),
+                                traditional: true,
+                                contentType: "application/json; charset=utf-8",
+                                success: function (result) {
+
+                                    $('.result').text('Final Score: ' + result.score);
+                                },
+                                error: function (xhr, errorType, exception) {
+                                    var errorMessage = exception || xhr.statusText;
+                                    $('.errorTxt')
+                                        .text('NOTE! Something happend: ' +
+                                            errorMessage +
+                                            '. HINT: ' +
+                                            'Game is over.');
+                                },
+                                dataType: 'json'
+                            });
+
+
+                        });
+            });
+    </script>
+}
+
+}
+@section headSection
+ {
+    <style type="text/css">
+        input {
+            display: block;
+            margin: 5px;
+        }
+
+        .score {
+            font-weight: bold;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+
+            .score .result {
+                color: #145E14;
+            }
+
+            .score .title {
+                margin-right: 5px;
+            }
+
+        .error {
+            color: red;
+            margin-top: 20px;
+        }
+    </style>
+
+
+
+}
+@{
+    ViewBag.Title = "Home";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model ScoreCalculator.Models.IndexViewModel
+@*<h2>
+        Bowling Score Calculator
+    </h2>*@
+<h2>
+    test insurance finder
+</h2>
+<span>First Roll:</span>@Html.TextBox("score-roll", 0)
+<input type="button" id="calc-btn" value="Calculate Score!" />
+<div class="score">
+    <span class="result"></span>
+</div>
+<div class="error">
+    <span class="errorTxt"></span>
+</div>
